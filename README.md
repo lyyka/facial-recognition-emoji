@@ -6,3 +6,11 @@ This app requires opencv-python and pillow packages both to be installed in orde
 You can install those in your environment using pip.<br/>
 pip install opencv-python<br/>
 pip install pillow
+
+# Arguments
+The video file has just a **mode** argument. It specifies what do you want to do with faces when detected.<br/>
+blur (to blur faces)<br/>
+rect (to frame the faces)<br/>
+emoji (to put emoji over faces)
+<br/>
+The image file has two arguments, **mode** and **image**. Mode is the same, and image just specifies path to the image which you want to use to detect faces on
