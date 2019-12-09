@@ -11,9 +11,11 @@ from PIL import Image
 # For arguments and CMD
 import argparse
 
-# Grayscale and invert functions
-from color_manipulation.grayscale import grayscale
-from color_manipulation.invert import invert
+def draw_rect(image, faces):
+    result_image = image.copy()
+    for (x, y, w, h) in faces:
+        cv2.rectangle(result_image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    return result_image
 
 def image_over(image, over, faces):
     result_image = image.copy()
@@ -48,7 +50,7 @@ def blur_faces(image, faces):
 
     return result_image
 
-def face_detect(image_path):
+def face_detect(image_path, args):
     # Read the cascade haar file
     faceCascade = cv2.CascadeClassifier("./cascades/haarcascade_frontalface_default.xml")
 
@@ -73,14 +75,20 @@ def face_detect(image_path):
         # Smiley to be drawn over faces
         over = cv2.imread("./images/yeehaw.png", cv2.IMREAD_UNCHANGED)
 
+        # Draw rect
+        if args.mode == "rect":
+            result = draw_rect(image, faces)
+
         # Blur faces
-        blurry = blur_faces(image, faces)
+        if args.mode == "blur":
+            result = blur_faces(image, faces)
 
         # Smiley over faces
-        yeehaw = image_over(image, over, faces)
+        if args.mode == "emoji":
+            result = image_over(image, over, faces)
 
         # Show the drawn image
-        cv2.imshow("Faces found", yeehaw)
+        cv2.imshow("Faces found", result)
         cv2.waitKey(0)
     else:
         print("No faces found!")
@@ -90,6 +98,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # add CLI arguments
+    parser.add_argument('-m', '--mode', action="store", type=str,
+                        help="blur, rect, emoji", required=True)
     parser.add_argument('-i', '--image', action="store", type=str, help="Image to be processed", required=True)
 
     # parse arguments
@@ -99,4 +109,4 @@ if __name__ == "__main__":
     pathname = os.path.dirname(sys.argv[0])
     image_path = os.path.abspath(pathname) + "\\" + args.image
 
-    face_detect(image_path)
+    face_detect(image_path, args)

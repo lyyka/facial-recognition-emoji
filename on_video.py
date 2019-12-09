@@ -11,10 +11,6 @@ from PIL import Image
 # For arguments and CMD
 import argparse
 
-# Grayscale and invert functions
-from color_manipulation.grayscale import grayscale
-from color_manipulation.invert import invert
-
 def draw_rect(image, faces):
     result_image = image.copy()
     for (x, y, w, h) in faces:
