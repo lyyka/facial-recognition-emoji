@@ -1,12 +1,5 @@
 # OpenCV for image recognition
 import cv2
-import numpy as np
-
-# Used to compile image path
-import sys, os, time
-
-# For image manipulation
-from PIL import Image
 
 # For arguments and CMD
 import argparse
@@ -36,12 +29,12 @@ def image_over(smileFaceCascade, emojis, image, faces):
         # Create smiley just for this detection
         this_detection_over = cv2.resize(over, (h, w))
 
-        # Convert all transparent pixels to pixels from main imagae
+        # Convert all transparent pixels to pixels from main image that should be below
         add_x, add_y = 0, 0
-        for line in this_detection_over:
+        for pixel_row in this_detection_over:
             add_x = 0
             add_y += 1
-            for pixel in line:
+            for pixel in pixel_row:
                 add_x += 1
                 if pixel[3] == 0:
                     this_detection_over[add_y - 1, add_x - 1] = result_image[y + add_y - 1, x + add_x - 1]
@@ -70,11 +63,9 @@ def blur_faces(image, faces):
 def face_detect(cascades, emojis, frame, mode):
     # Copy the frame to image
     image  = frame.copy()
-    # Coonvert to bgra
-    image_bgra = cv2.cvtColor(image, cv2.COLOR_BGR2BGRA)
 
     # Convert it to gray
-    gray = cv2.cvtColor(image_bgra, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Equalize Hist
     gray = cv2.equalizeHist(gray)
