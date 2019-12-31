@@ -4,6 +4,8 @@ import cv2
 # For arguments and CMD
 import argparse
 
+from time import time
+
 def draw_rect(image, faces):
     result_image = image.copy()
     for (x, y, w, h) in faces:
@@ -125,6 +127,10 @@ def process_frames(args):
     # Capture video
     cap = cv2.VideoCapture(0)
 
+    # total time to process frames
+    total_frames_time = 0
+    total_frames_num = 0
+
     # While there is video
     while(cap.isOpened()):
         # Capture ret and frame
@@ -134,7 +140,11 @@ def process_frames(args):
         # OpenCV loads empty frames near the end of video
         if frame is not None:
             # Detect faces in frame
+            process_start = time()
             processed_frame = face_detect(cascades, emojis, frame, args.mode)
+            process_end = time()
+            total_frames_time += (process_end - process_start)
+            total_frames_num += 1
 
             # Resize the frame to fit the output file format
             processed_frame = cv2.resize(processed_frame, (640, 480))
@@ -144,6 +154,8 @@ def process_frames(args):
 
         # If q is pressed, cancel the loop
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            print("----------")
+            print("Average time to process single frame: {0}".format(total_frames_time / total_frames_num))
             break
 
     cap.release()

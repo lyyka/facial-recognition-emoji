@@ -1,12 +1,8 @@
 # OpenCV for image recognition
 import cv2
-import numpy as np
 
 # Used to compile image path
 import sys, os
-
-# For image manipulation
-from PIL import Image
 
 # For arguments and CMD
 import argparse
