@@ -4,19 +4,31 @@ import cv2
 # For arguments and CMD
 import argparse
 
+# For calculating the avg time needed
 from time import time
 
 def draw_rect(image, faces):
+    # Copy the image to the result
     result_image = image.copy()
+
+    # For each face, draw the rectangle around it
     for (x, y, w, h) in faces:
         cv2.rectangle(result_image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    
+    # Return the resulting image with rectangles
     return result_image
 
 def image_over(smileFaceCascade, emojis, image, faces):
+    # Copt the image to resulting one
     result_image = image.copy()
+
+    # Change colors to BGRA
     result_image = cv2.cvtColor(result_image, cv2.COLOR_BGR2BGRA)
+
+    # Define the gray-scale copy of the resulting image
     gray = cv2.cvtColor(result_image, cv2.COLOR_BGRA2GRAY)
     
+    # Loop through detected faces
     for (x, y, w, h) in faces:
         # See if there are smileys to switch emojis
         smiles = smileFaceCascade.detectMultiScale(gray, 1.5, 20)
@@ -103,6 +115,7 @@ def face_detect(cascades, emojis, frame, mode):
     if mode == "emoji":
         frame_to_display = image_over(cascades["smileFaceCascade"], emojis, image, faces)
 
+    # Rectangle over faces
     if mode == "rect":
         frame_to_display = draw_rect(image, faces)
 
@@ -139,18 +152,29 @@ def process_frames(args):
         # If frame is None break the loop
         # OpenCV loads empty frames near the end of video
         if frame is not None:
-            # Detect faces in frame
+            # Get time before the detection
             process_start = time()
+
+            # Detect faces in frame
             processed_frame = face_detect(cascades, emojis, frame, args.mode)
+
+            # Get time after the q
             process_end = time()
+
+            # Change variables to calculate average time needed
             total_frames_time += (process_end - process_start)
             total_frames_num += 1
 
             # Resize the frame to fit the output file format
             processed_frame = cv2.resize(processed_frame, (640, 480))
 
-            # Show the frame in window (useful for real-time detection)
-            cv2.imshow('frame',processed_frame)
+            # Show the frame in window
+            cv2.imshow('frame', processed_frame)
+
+        # If s is pressed, save the frame image
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+            if frame is not None and processed_frame is not None:
+                cv2.imwrite("frame_{0}.jpg".format(total_frames_num), processed_frame)
 
         # If q is pressed, cancel the loop
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -167,7 +191,7 @@ if __name__ == "__main__":
 
     # add CLI arguments
     parser.add_argument('-m', '--mode', action="store", type=str,
-                        help="blur, rect, emoji", required=True)
+                        help="Available options: 'blur', 'rect' or 'emoji'", required=True)
 
     # parse arguments
     args = parser.parse_args()
