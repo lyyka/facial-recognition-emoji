@@ -2,16 +2,19 @@
 import cv2
 
 # Used to compile image path
-import sys, os
+import sys
+import os
 
 # For arguments and CMD
 import argparse
+
 
 def draw_rect(image, faces):
     result_image = image.copy()
     for (x, y, w, h) in faces:
         cv2.rectangle(result_image, (x, y), (x+w, y+h), (0, 255, 0), 2)
     return result_image
+
 
 def image_over(image, over, faces):
     result_image = image.copy()
@@ -30,6 +33,7 @@ def image_over(image, over, faces):
 
     return result_image
 
+
 def blur_faces(image, faces):
     result_image = image.copy()
 
@@ -46,12 +50,13 @@ def blur_faces(image, faces):
 
     return result_image
 
-def face_detect(image_path, args):
+
+def face_detect(img_path, cmd_args):
     # Read the cascade haar file
-    faceCascade = cv2.CascadeClassifier("./cascades/haarcascade_frontalface_default.xml")
+    face_cascade = cv2.CascadeClassifier("./cascades/haarcascade_frontalface_default.xml")
 
     # Read the image
-    image  = cv2.imread(image_path)
+    image = cv2.imread(img_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2BGRA)
 
     # Convert it to gray
@@ -59,28 +64,32 @@ def face_detect(image_path, args):
     gray = cv2.equalizeHist(gray)
 
     # Detect faces
-    faces = faceCascade.detectMultiScale(
+    faces = face_cascade.detectMultiScale(
         gray,
         scaleFactor=1.2,
         minNeighbors=5,
         minSize=(10, 10),
-        flags = cv2.CASCADE_SCALE_IMAGE
+        flags=cv2.CASCADE_SCALE_IMAGE
     )
 
-    if(len(faces) > 0):
+    if len(faces) > 0:
         # Smiley to be drawn over faces
         over = cv2.imread("./images/yeehaw.png", cv2.IMREAD_UNCHANGED)
 
         # Draw rect
-        if args.mode == "rect":
+        if cmd_args.mode == "rect":
             result = draw_rect(image, faces)
 
         # Blur faces
-        if args.mode == "blur":
+        elif cmd_args.mode == "blur":
             result = blur_faces(image, faces)
 
         # Smiley over faces
-        if args.mode == "emoji":
+        elif cmd_args.mode == "emoji":
+            result = image_over(image, over, faces)
+
+        # Default value
+        else:
             result = image_over(image, over, faces)
 
         # Show the drawn image
@@ -88,6 +97,7 @@ def face_detect(image_path, args):
         cv2.waitKey(0)
     else:
         print("No faces found!")
+
 
 if __name__ == "__main__":
     # argument parser

@@ -1,4 +1,8 @@
+# Custom
 color_manipulation/
+
+# VS Code
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

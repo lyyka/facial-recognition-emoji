@@ -7,6 +7,7 @@ import argparse
 # For calculating the avg time needed
 from time import time
 
+
 def draw_rect(image, faces):
     # Copy the image to the result
     result_image = image.copy()
@@ -18,7 +19,8 @@ def draw_rect(image, faces):
     # Return the resulting image with rectangles
     return result_image
 
-def image_over(smileFaceCascade, emojis, image, faces):
+
+def image_over(smile_face_cascade, emojis, image, faces):
     # Copt the image to resulting one
     result_image = image.copy()
 
@@ -31,10 +33,9 @@ def image_over(smileFaceCascade, emojis, image, faces):
     # Loop through detected faces
     for (x, y, w, h) in faces:
         # See if there are smileys to switch emojis
-        smiles = smileFaceCascade.detectMultiScale(gray, 1.5, 20)
+        smiles = smile_face_cascade.detectMultiScale(gray, 1.5, 20)
 
         # Select which emoji to use
-        over = None
         if len(smiles) > 0:
             over = emojis["smiley"]
         else:
@@ -58,6 +59,7 @@ def image_over(smileFaceCascade, emojis, image, faces):
 
     return result_image
 
+
 def blur_faces(image, faces):
     result_image = image.copy()
 
@@ -74,9 +76,10 @@ def blur_faces(image, faces):
 
     return result_image
 
+
 def face_detect(cascades, emojis, frame, mode):
     # Copy the frame to image
-    image  = frame.copy()
+    image = frame.copy()
 
     # Convert it to gray
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -90,7 +93,7 @@ def face_detect(cascades, emojis, frame, mode):
         scaleFactor=1.2,
         minNeighbors=5,
         minSize=(10, 10),
-        flags = cv2.CASCADE_SCALE_IMAGE
+        flags=cv2.CASCADE_SCALE_IMAGE
     )
 
     # If no frontal faces detected, try to get profile faces
@@ -101,7 +104,7 @@ def face_detect(cascades, emojis, frame, mode):
             scaleFactor=1.2,
             minNeighbors=5,
             minSize=(10, 10),
-            flags = cv2.CASCADE_SCALE_IMAGE
+            flags=cv2.CASCADE_SCALE_IMAGE
         )
         # If no profile faces detected either, just return the frame
         if len(faces) == 0:
@@ -112,30 +115,34 @@ def face_detect(cascades, emojis, frame, mode):
         frame_to_display = blur_faces(image, faces)
 
     # Smiley over faces
-    if mode == "emoji":
+    elif mode == "emoji":
         frame_to_display = image_over(cascades["smileFaceCascade"], emojis, image, faces)
 
     # Rectangle over faces
-    if mode == "rect":
+    elif mode == "rect":
+        frame_to_display = draw_rect(image, faces)
+
+    # Default option
+    else:
         frame_to_display = draw_rect(image, faces)
 
     return frame_to_display
 
-def process_frames(args):
+
+def process_frames(cmd_args):
     # Read the cascade haar file
     cascades = {}
 
     # Read emojis
     emojis = {}
 
-    if args.mode == "emoji":
+    if cmd_args.mode == "emoji":
         # Add things needed for emojis (haar and emoji PNGs)
         cascades["smileFaceCascade"] = cv2.CascadeClassifier("./cascades/haarcascade_smile.xml")
         emojis["smiley"] = cv2.imread("./images/smile.png", cv2.IMREAD_UNCHANGED)
         emojis["yeehaw"] = cv2.imread("./images/yeehaw.png", cv2.IMREAD_UNCHANGED)
     cascades["profileFaceCascade"] = cv2.CascadeClassifier("./cascades/haarcascade_profileface.xml")
     cascades["frontalFaceCascade"] = cv2.CascadeClassifier("./cascades/haarcascade_frontalface_default.xml")
-
 
     # Capture video
     cap = cv2.VideoCapture(0)
@@ -145,18 +152,19 @@ def process_frames(args):
     total_frames_num = 0
 
     # While there is video
-    while(cap.isOpened()):
+    while cap.isOpened():
         # Capture ret and frame
         ret, frame = cap.read()
 
         # If frame is None break the loop
         # OpenCV loads empty frames near the end of video
+        processed_frame = None
         if frame is not None:
             # Get time before the detection
             process_start = time()
 
             # Detect faces in frame
-            processed_frame = face_detect(cascades, emojis, frame, args.mode)
+            processed_frame = face_detect(cascades, emojis, frame, cmd_args.mode)
 
             # Get time after the q
             process_end = time()
@@ -184,6 +192,7 @@ def process_frames(args):
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     # argument parser
